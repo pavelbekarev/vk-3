@@ -1,61 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import bridge from '@vkontakte/vk-bridge';
-import { View, Panel, PanelHeader, Group, AdaptivityProvider, AppRoot, ConfigProvider, SplitLayout, SplitCol, Div } from '@vkontakte/vkui';
+import { Epic, Root, Tabbar, TabbarItem, View } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
+import './App.css'
+import { 
+	useActiveVkuiLocation, 
+	useGetPanelForView 
+} from '@vkontakte/vk-mini-apps-router';
 
-import { AppInfo } from './components/AppInfo';
-import { UserInfo } from './components/UserInfo';
-import { InputVerb } from './components/InputVerb';
-import { OutputVerbs } from './components/OutputVerbs';
+import HomePanel from './panels/HomePanel';
+import MyTabbar from './components/MyTabbar';
+
+import { 
+	Icon28NewsfeedOutline, 
+	Icon28UserCircleOutline, 
+	Icon28QuestionOutline 
+} from '@vkontakte/icons';
 
 const App = () => {
-	const [fetchedUser, setUser] = useState(null);
-	const verbs = require("./data.json");
-	const [form1, setForm1] = useState("");
-	const [form2, setForm2] = useState("");
-	const [form3, setForm3] = useState("");
-	const [translate, setTranslate] = useState("");
-
-	const changeText = e => {
-		let text = e.target.value.toLowerCase();
-		setForm1(text);
-	};
-
-	const handlerSubmit = () => {
-		const forms = verbs.find((item) => (item.firstForm == form1));
-		setForm2(forms ? forms.secondForm : "нет");
-		setForm3(forms ? forms.thirdForm : "нет");
-		setTranslate(forms ? forms.translate : "нет");
-	};
-
-	useEffect(() => {
-		async function fetchData() {
-			const user = await bridge.send('VKWebAppGetUserInfo');
-			setUser(user);
-		}
-		fetchData();
-	}, []);
+	const { view: activeView } = useActiveVkuiLocation();
+	const activePanel = useGetPanelForView('default_view');
 
 	return (
-		<ConfigProvider>
-			<AdaptivityProvider>
-				<AppRoot>
-					<SplitLayout header={<PanelHeader separator={false}/>}>
-						<SplitCol>
-							<View activePanel="main">
-								<Panel id="main">
-									<AppInfo />
-									<UserInfo fetchedUser={fetchedUser}/>
-									<InputVerb form1={form1} changeText={changeText} handlerSubmit={handlerSubmit}/>
-									<OutputVerbs form2={form2} form3={form3} translate={translate}/>
-								</Panel>
-								
-							</View>
-						</SplitCol>
-					</SplitLayout>
-				</AppRoot>
-			</AdaptivityProvider>
-		</ConfigProvider>
+		<Epic activeStory={activeView}
+			tabbar={<MyTabbar />}
+		>
+			<View id={activeView} activePanel={activePanel}>
+				<HomePanel nav="home_panel"/>
+			</View>
+		</Epic>
 	);
 }
 
